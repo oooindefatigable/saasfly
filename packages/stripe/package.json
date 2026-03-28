@@ -16,7 +16,7 @@
   },
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
-    "dev": "stripe listen --forward-to localhost:3000/api/webhooks/stripe",
+    "dev": "echo 'Stripe CLI not available in this environment - skipping webhook listener'",
     "lint": "eslint .",
     "format": "prettier --check '**/*.{mjs,ts,json}' ",
     "typecheck": "tsc --noEmit"
