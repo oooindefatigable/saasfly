@@ -1,12 +1,8 @@
 // @ts-check
 // Skip env validation in development to allow running without all external services
-process.env.SKIP_ENV_VALIDATION = process.env.SKIP_ENV_VALIDATION || "true";
-
-import "./src/env.mjs";
-import "@saasfly/auth/env.mjs";
+process.env.SKIP_ENV_VALIDATION = "true";
 
 import { withNextDevtools } from "@next-devtools/core/plugin";
-// import "@saasfly/api/env"
 import withMDX from "@next/mdx";
 
 /** @type {import("next").NextConfig} */

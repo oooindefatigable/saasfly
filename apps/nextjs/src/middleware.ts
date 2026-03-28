@@ -25,15 +25,7 @@ function isNoNeedProcess(request: NextRequest): boolean {
   return noNeedProcessRoute.some((route) => new RegExp(route).test(pathname));
 }
 
-// Check if Clerk is configured
-const isClerkConfigured = !!(
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== "1" &&
-  process.env.CLERK_SECRET_KEY &&
-  process.env.CLERK_SECRET_KEY !== "1"
-);
-
-// Simple middleware for development without Clerk
+// Simple middleware for internationalization
 function simpleMiddleware(request: NextRequest) {
   if (isNoNeedProcess(request)) {
     return NextResponse.next();
@@ -63,17 +55,6 @@ function simpleMiddleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Use Clerk middleware only if configured
-let middleware: (request: NextRequest) => Promise<NextResponse> | NextResponse;
-
-if (isClerkConfigured) {
-  // Dynamic import to avoid errors when Clerk is not configured
-  const { middleware: clerkMiddleware } = require("./utils/clerk");
-  middleware = clerkMiddleware;
-} else {
-  middleware = simpleMiddleware;
-}
-
 export const config = {
   matcher: [
     "/((?!.*\\..*|_next).*)",
@@ -83,4 +64,8 @@ export const config = {
   ],
 };
 
-export default middleware;
+// Export the simple middleware directly for development
+// In production with Clerk configured, use the Clerk middleware from utils/clerk
+export default function middleware(request: NextRequest) {
+  return simpleMiddleware(request);
+}

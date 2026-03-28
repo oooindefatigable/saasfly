@@ -1,21 +1,12 @@
 "use client";
 
+import { ClerkProvider } from "@clerk/nextjs";
 import { ReactNode } from "react";
-import dynamic from "next/dynamic";
 
-// Check if Clerk is configured
+// Check if Clerk is configured at build time
 const isClerkConfigured = !!(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== "1"
-);
-
-// Dynamically import ClerkProvider only when configured
-const ClerkProviderWrapper = dynamic(
-  () => import("@clerk/nextjs").then((mod) => mod.ClerkProvider),
-  { 
-    ssr: false,
-    loading: () => null,
-  }
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.length > 10
 );
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -24,5 +15,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  return <ClerkProviderWrapper>{children}</ClerkProviderWrapper>;
+  return <ClerkProvider>{children}</ClerkProvider>;
 }
