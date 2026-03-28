@@ -3,13 +3,27 @@ import {fetchRequestHandler} from "@trpc/server/adapters/fetch";
 
 import {createTRPCContext} from "@saasfly/api";
 import {edgeRouter} from "@saasfly/api/edge";
-import {getAuth} from "@clerk/nextjs/server";
+
+// Check if Clerk is configured
+const isClerkConfigured = !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== "1" &&
+  process.env.CLERK_SECRET_KEY &&
+  process.env.CLERK_SECRET_KEY !== "1"
+);
 
 // export const runtime = "edge";
 const createContext = async (req: NextRequest) => {
+    let authData = { userId: "dev-user-id" as string | null };
+    
+    if (isClerkConfigured) {
+      const { getAuth } = await import("@clerk/nextjs/server");
+      authData = getAuth(req);
+    }
+    
     return createTRPCContext({
         headers: req.headers,
-        auth: getAuth(req),
+        auth: authData,
     });
 };
 

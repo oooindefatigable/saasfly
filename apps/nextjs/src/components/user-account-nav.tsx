@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { User } from "@saasfly/auth";
-import { useClerk } from "@clerk/nextjs";
 
 import {
   DropdownMenu,
@@ -13,6 +13,12 @@ import {
 } from "@saasfly/ui/dropdown-menu";
 
 import { UserAvatar } from "~/components/user-avatar";
+
+// Check if Clerk is configured
+const isClerkConfigured = !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== "1"
+);
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
   user: Pick<User, "name" | "image" | "email">;
@@ -27,7 +33,29 @@ export function UserAccountNav({
   params: { lang },
   dict,
 }: UserAccountNavProps) {
-  const { signOut } = useClerk();
+  const router = useRouter();
+  
+  // Conditionally use Clerk
+  let signOut: ((opts?: { redirectUrl?: string }) => Promise<void>) | undefined;
+  
+  if (isClerkConfigured) {
+    try {
+      const { useClerk } = require("@clerk/nextjs");
+      const clerk = useClerk();
+      signOut = clerk.signOut;
+    } catch (e) {
+      // Clerk not available
+    }
+  }
+  
+  const handleSignOut = async () => {
+    if (signOut) {
+      await signOut({ redirectUrl: `/${lang}/login-clerk` });
+    } else {
+      // Dev mode - just redirect to login
+      router.push(`/${lang}/login-clerk`);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -63,10 +91,9 @@ export function UserAccountNav({
           className="cursor-pointer"
           onSelect={(event) => {
             event.preventDefault();
-            signOut({ redirectUrl: `/${lang}/login-clerk` })
-              .catch((error) => {
-                console.error("Error during sign out:", error);
-              })
+            handleSignOut().catch((error) => {
+              console.error("Error during sign out:", error);
+            });
           }}
         >
           {dict.sign_out}

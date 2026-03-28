@@ -4,7 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import Negotiator from "negotiator";
 
 import { i18n } from "~/config/i18n-config";
-import { env } from "@saasfly/auth/env.mjs";
+
+// Get ADMIN_EMAIL directly from process.env to avoid env validation errors
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 const noNeedProcessRoute = [".*\\.png", ".*\\.jpg", ".*\\.opengraph-image.png"];
 
@@ -80,8 +82,8 @@ export const middleware = clerkMiddleware(async (auth, req: NextRequest) => {
 
   const isAuth = !!userId;
   let isAdmin = false
-  if (env.ADMIN_EMAIL) {
-    const adminEmails = env.ADMIN_EMAIL.split(",");
+  if (ADMIN_EMAIL) {
+    const adminEmails = ADMIN_EMAIL.split(",");
     if (sessionClaims?.user?.email) {
       isAdmin = adminEmails.includes(sessionClaims?.user?.email);
     }

@@ -6,14 +6,14 @@ export const env = createEnv({
     // This is optional because it's only used in development.
     // See https://next-auth.js.org/deployment.
     NEXTAUTH_URL: z.string().url().optional(),
-    NEXTAUTH_SECRET: z.string().min(1),
-    GITHUB_CLIENT_ID: z.string().min(1),
-    GITHUB_CLIENT_SECRET: z.string().min(1),
-    STRIPE_API_KEY: z.string().min(1),
-    STRIPE_WEBHOOK_SECRET: z.string().min(1),
+    NEXTAUTH_SECRET: z.string().optional().default("dev-secret-change-in-production"),
+    GITHUB_CLIENT_ID: z.string().optional().default(""),
+    GITHUB_CLIENT_SECRET: z.string().optional().default(""),
+    STRIPE_API_KEY: z.string().optional().default(""),
+    STRIPE_WEBHOOK_SECRET: z.string().optional().default(""),
   },
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().min(1),
+    NEXT_PUBLIC_APP_URL: z.string().optional().default("http://localhost:3000"),
     NEXT_PUBLIC_STRIPE_PRO_PRODUCT_ID: z.string().optional(),
     NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID: z.string().optional(),
     NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID: z.string().optional(),
@@ -46,4 +46,5 @@ export const env = createEnv({
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   },
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

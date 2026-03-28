@@ -11,9 +11,26 @@ import { callProcedure } from "@trpc/server";
 import { TRPCErrorResponse } from "@trpc/server/rpc";
 import { cache } from "react";
 import { appRouter } from "../../../../packages/api/src/root";
-import { auth } from "@clerk/nextjs/server";
 
-type AuthObject = Awaited<ReturnType<typeof auth>>;
+// Check if Clerk is configured
+const isClerkConfigured = !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== "1" &&
+  process.env.CLERK_SECRET_KEY &&
+  process.env.CLERK_SECRET_KEY !== "1"
+);
+
+// Conditionally import auth from Clerk
+const getAuth = async () => {
+  if (isClerkConfigured) {
+    const { auth } = await import("@clerk/nextjs/server");
+    return auth();
+  }
+  // Return mock auth for development without Clerk
+  return { userId: "dev-user-id" };
+};
+
+type AuthObject = { userId: string | null };
 
 export const createTRPCContext = async (opts: {
   headers: Headers;
@@ -37,7 +54,7 @@ const createContext = cache(async () => {
       cookie: cookies().toString(),
       "x-trpc-source": "rsc",
     }),
-    auth: await auth(),
+    auth: await getAuth(),
   });
 });
 

@@ -8,7 +8,13 @@ import { MagicLinkEmail, resend, siteConfig } from "@saasfly/common";
 import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
 
 import { db } from "./db";
-import { env } from "./env.mjs";
+
+// Use process.env directly to avoid env validation errors
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || "";
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || "";
+const RESEND_FROM = process.env.RESEND_FROM || "";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
+const IS_DEBUG = process.env.IS_DEBUG;
 
 type UserId = string;
 type IsAdmin = boolean;
@@ -41,8 +47,8 @@ export const authOptions: NextAuthOptions = {
 
   providers: [
     GitHubProvider({
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
+      clientId: GITHUB_CLIENT_ID,
+      clientSecret: GITHUB_CLIENT_SECRET,
       httpOptions: { timeout: 15000 },
     }),
     EmailProvider({
@@ -59,7 +65,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           await resend.emails.send({
-            from: env.RESEND_FROM,
+            from: RESEND_FROM,
             to: identifier,
             subject: authSubject,
             react: MagicLinkEmail({
@@ -107,8 +113,8 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
       let isAdmin = false;
-      if (env.ADMIN_EMAIL) {
-        const adminEmails = env.ADMIN_EMAIL.split(",");
+      if (ADMIN_EMAIL) {
+        const adminEmails = ADMIN_EMAIL.split(",");
         if (email) {
           isAdmin = adminEmails.includes(email);
         }
@@ -122,7 +128,7 @@ export const authOptions: NextAuthOptions = {
       };
     },
   },
-  debug: env.IS_DEBUG === "true",
+  debug: IS_DEBUG === "true",
 };
 
 // Use it in server contexts
